@@ -59,9 +59,9 @@ def main():
         ufw = UFW()
         wg = Wireguard()
         report_ok(ufw, wg)
-        logger.info('End')
+        logger.info('Success')
     except Exception as e:
-        logger.info('Error' +  str(e))
+        logger.info('Error: ' +  str(e))
         print(report_error(e))
     
     return
@@ -80,5 +80,3 @@ def main():
         ufw.add_profile(ssh_key, 'allow')
 
 
-if __name__ == '__main__':
-    main()

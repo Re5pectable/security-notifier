@@ -1,6 +1,8 @@
 import json
+import pathlib
 
-settings = json.load(open('./settings.json', 'r'))
+__path = str(pathlib.Path(__file__).parent.resolve()) + '/settings.json'
+settings = json.load(open(__path, 'r'))
 
 WIREGUARD_PORT = settings['WIREGUARD_PORT']
 WIREGUARD_IP_PREFIX = settings['WIREGUARD_IP_PREFIX']
