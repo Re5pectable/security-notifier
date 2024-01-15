@@ -58,8 +58,8 @@ def main():
         logger.info('Start')
         ufw = UFW()
         wg = Wireguard()
-        report_ok(ufw, wg)
-        logger.info('Success')
+        status, _ = report_ok(ufw, wg)
+        logger.info('Success, ' + str(status))
     except Exception as e:
         logger.info('Error: ' +  str(e))
         print(report_error(e))
