@@ -2,12 +2,29 @@ import sys
 
 sys.dont_write_bytecode = True
 
+import logging
 from datetime import datetime
 
 from adapters.telegram import Telegram
 from adapters.ufw import UFW
 from adapters.wireguard import Wireguard
 from config import *
+
+logger = logging.getLogger(__name__)
+
+logger = logging.getLogger('my_logger')
+logger.setLevel(logging.INFO) 
+
+file_handler = logging.FileHandler('./logs.log')
+file_handler.setLevel(logging.INFO)
+file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+console_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+
+logger.addHandler(file_handler)
+logger.addHandler(console_handler)
 
 def report_ok(ufw: UFW, wg: Wireguard):
     text = "`"
@@ -33,16 +50,18 @@ def report_error(e: Exception):
     text += f"*#Error, {datetime.now().strftime('%H:%M:%S %d.%m.%Y')}*"
     for symbol in "()#.":
         text = text.replace(symbol, '\\' + symbol)
-    print(text)
     return Telegram.send_text(TG_CHAT, text)
     
 
 def main():
     try:
+        logger.info('Start')
         ufw = UFW()
         wg = Wireguard()
         report_ok(ufw, wg)
+        logger.info('End')
     except Exception as e:
+        logger.info('Error' +  str(e))
         print(report_error(e))
     
     return
