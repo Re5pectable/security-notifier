@@ -52,7 +52,11 @@ def report_error(e: Exception):
 def emergency_ssh_open(ufw: UFW, wg: Wireguard):
     ssh_ufw_settings = ufw.profiles.get(f'{SSH_PORT}/tcp', {}) 
     logger.info(ssh_ufw_settings)
-    if not wg.active and ssh_ufw_settings.get('allow') and ssh_ufw_settings.get('from', '').startswith(WIREGUARD_IP_PREFIX):
+    if all([
+        not wg.active,
+        ssh_ufw_settings.get('action') == 'allow',
+        ssh_ufw_settings.get('from', '').startswith(WIREGUARD_IP_PREFIX)
+    ]):
         return Telegram.send_text(TG_CHAT, f'🔴🔴🔴🔴🔴 Turning on {SSH_PORT}')        
     
 
