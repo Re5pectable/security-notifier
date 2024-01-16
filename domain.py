@@ -61,7 +61,7 @@ def main():
         logger.info('Start')
         ufw = UFW()
         wg = Wireguard()
-        emergency_ssh_open()
+        emergency_ssh_open(ufw, wg)
         status, _ = report(ufw, wg)
         logger.info('Success, ' + str(status))
     except Exception as e:
