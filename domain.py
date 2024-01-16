@@ -1,5 +1,6 @@
 import subprocess
 import sys
+import traceback
 from datetime import datetime
 
 from adapters.logger import logger
@@ -86,5 +87,5 @@ def main():
     try:
         checks()
     except Exception as e:
-        logger.error(str(e))
+        logger.error(traceback.format_exc())
     logger.info('---- End ----')
