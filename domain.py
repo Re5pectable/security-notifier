@@ -39,7 +39,7 @@ def get_wg_text(wg: Wireguard):
 
 def get_footer_text(error: Exception | None = None):
     devider = "——————————————————————————————"
-    hashtag = '#Ok' if error else f'#Error {str(error)}'
+    hashtag = '#Ok' if not error else f'#Error {str(error)}'
     time = datetime.now().strftime('%H:%M:%S %d.%m.%Y')
     return f"{devider}\n*{hashtag}*, {time}"
 
