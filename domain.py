@@ -19,7 +19,7 @@ def get_ufw_text(ufw: UFW):
 
     text = header
     text += "\n".join([
-        rule_template.format(value['action'], rule, value['from'])
+        rule_template.format(action=value['action'], rule=rule, from_=value['from'])
         for rule, value in ufw.profiles.items()
     ])
     return '`' + text + '`\n'
@@ -31,7 +31,7 @@ def get_wg_text(wg: Wireguard):
 
     text = header
     text += "\n".join([
-        peer_template.format(peer.allowed_ips, peer.latest_handshake)
+        peer_template.format(allowed_ips=peer.allowed_ips, latest_handshake=peer.latest_handshake)
         for peer in wg.peers
     ])
     return '`' + text + '`\n'
