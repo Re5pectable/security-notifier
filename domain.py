@@ -1,77 +1,90 @@
-import sys
-
-sys.dont_write_bytecode = True
-
-import logging
 import subprocess
+import sys
 from datetime import datetime
 
+from adapters.logger import logger
 from adapters.telegram import Telegram
 from adapters.ufw import UFW
 from adapters.wireguard import Wireguard
 from config import *
+from errors import NoAccessSituation
 
-logger = logging.getLogger(__name__)
+sys.dont_write_bytecode = True
 
-logger = logging.getLogger('my_logger')
-logger.setLevel(logging.INFO) 
 
-file_handler = logging.FileHandler('./logs.log')
-file_handler.setLevel(logging.INFO)
-file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+def get_ufw_text(ufw: UFW):
+    header = f"UFW active: {ufw.active}\n"
+    rule_template = "  {action} {rule} {from_}"
 
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.INFO)
-console_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+    text = header
+    text += "\n".join([
+        rule_template.format(value['action'], rule, value['from'])
+        for rule, value in ufw.profiles.items()
+    ])
+    return '`' + text + '`\n'
 
-logger.addHandler(file_handler)
-logger.addHandler(console_handler)
 
-def report(ufw: UFW, wg: Wireguard):
-    text = "`"
-    text += f"Wireguard: {wg.active}\n"
-    text += "\n".join([f"  {peer.allowed_ips}, {peer.latest_handshake}" for peer in wg.peers]) + '\n\n'
-    text += "UFW rules:\n"
-    text += "\n".join([f"  {value['action']} {rule} {value['from']}" for rule, value in ufw.profiles.items()])
-    text += "`"
-    text += "\n——————————————————————————————\n"
-    text += f"*#OK, {datetime.now().strftime('%H:%M:%S %d.%m.%Y')}*"
-    for symbol in "()#.":
-        text = text.replace(symbol, '\\' + symbol)
-    return Telegram.send_text(TG_CHAT, text)
+def get_wg_text(wg: Wireguard):
+    header = f"Wireguard: {wg.active}\n"
+    peer_template = "  {allowed_ips}, {latest_handshake}"
 
-def report_error(e: Exception):
-    text = "`"
-    text += "Got an error:\n" + str(e)
-    text += "`"
-    text += "\n——————————————————————————————\n"
-    text += f"*#Error, {datetime.now().strftime('%H:%M:%S %d.%m.%Y')}*"
-    for symbol in "()#.":
-        text = text.replace(symbol, '\\' + symbol)
-    return Telegram.send_text(TG_CHAT, text)
+    text = header
+    text += "\n".join([
+        peer_template.format(peer.allowed_ips, peer.latest_handshake)
+        for peer in wg.peers
+    ])
+    return '`' + text + '`\n'
 
-def emergency_ssh_open(ufw: UFW, wg: Wireguard):
-    ssh_ufw_settings = ufw.profiles.get(f'{SSH_PORT}/tcp', {}) 
+
+def get_footer_text(error: Exception | None = None):
+    devider = "——————————————————————————————"
+    hashtag = '#Ok' if error else f'#Error {str(error)}'
+    time = datetime.now().strftime('%H:%M:%S %d.%m.%Y')
+    return f"{devider}\n*{hashtag}*, {time}"
+
+
+def no_access_check(ufw: UFW, wg: Wireguard):
+    ssh_ufw_settings = ufw.profiles.get(f'{SSH_PORT}/tcp', {})
     if all([
         not wg.active,
         ssh_ufw_settings.get('action') == 'allow',
         ssh_ufw_settings.get('from', '').startswith(WIREGUARD_IP_PREFIX)
     ]):
-        subprocess.run(['sudo', 'ufw', 'allow', f'{SSH_PORT}/tcp'])
-        subprocess.run(['sudo', 'systemctl', 'restart', 'ufw.service'])
-        return Telegram.send_text(TG_CHAT, f'🔴🔴🔴🔴🔴 Turning on {SSH_PORT}')        
+        raise NoAccessSituation()
+
+
+def checks():
+    ufw = UFW()
+    logger.info('UFW created...')
+    wg = Wireguard()
+    logger.info('Wireguard created...')
     
+    text = f"{get_wg_text(wg)}\n{get_ufw_text(ufw)}"
+
+    try:
+        no_access_check(ufw, wg)
+        text += get_footer_text(error=None)
+        
+    except NoAccessSituation as e:
+        logger.error('NoAccessSituation:', str(e))
+        port_to_open = f'{SSH_PORT}/tcp'
+        subprocess.run(['sudo', 'ufw', 'allow', port_to_open])
+        subprocess.run(['sudo', 'systemctl', 'restart', 'ufw.service'])
+        logger.error(f'Opened {port_to_open}')
+        text += get_footer_text(error=e)
+        
+    except Exception as e:
+        logger.error('Exception:', str(e))
+        text += get_footer_text(error=e)
+        
+    finally:
+        Telegram.send_text(TG_CHAT, text)
+
 
 def main():
+    logger.info('--- Start ---')
     try:
-        logger.info('Start')
-        ufw = UFW()
-        wg = Wireguard()
-        emergency_ssh_open(ufw, wg)
-        status, _ = report(ufw, wg)
-        logger.info('Success, ' + str(status))
+        checks()
     except Exception as e:
-        logger.info('Error: ' +  str(e))
-        print(report_error(e))
-    
-    return
+        logger.error(str(e))
+    logger.info('---- End ----')

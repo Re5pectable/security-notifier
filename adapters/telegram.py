@@ -10,6 +10,8 @@ class Telegram:
     
     @classmethod
     def send_text(cls, tg_id: int, text: str):
+        for symbol in "()#./":
+            text = text.replace(symbol, '\\' + symbol)
         payload = {
             "chat_id": tg_id,
             "text": text,
