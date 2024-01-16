@@ -49,10 +49,3 @@ class UFW:
             from_ = line[columns_width['from']:].strip()
             values[to] = {'action': action, 'from': from_}
         return values
-    
-    def add_profile(self, action: Literal['allow', 'deny'], to: str):
-        command = ['sudo', 'ufw', action, to]
-        try:
-            subprocess.check_output(command).decode()
-        except subprocess.CalledProcessError as e:
-            raise ValueError(f'Cound not run {command}')

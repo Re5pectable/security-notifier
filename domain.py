@@ -3,6 +3,7 @@ import sys
 sys.dont_write_bytecode = True
 
 import logging
+import subprocess
 from datetime import datetime
 
 from adapters.telegram import Telegram
@@ -51,13 +52,13 @@ def report_error(e: Exception):
 
 def emergency_ssh_open(ufw: UFW, wg: Wireguard):
     ssh_ufw_settings = ufw.profiles.get(f'{SSH_PORT}/tcp', {}) 
-    logger.info(ssh_ufw_settings)
     if all([
         not wg.active,
         ssh_ufw_settings.get('action') == 'allow',
         ssh_ufw_settings.get('from', '').startswith(WIREGUARD_IP_PREFIX)
     ]):
-        ufw.add_profile('allow', f'{SSH_PORT}/tcp')
+        subprocess.run(['sudo', 'ufw', 'allow', f'{SSH_PORT}/tcp'])
+        subprocess.run(['sudo', 'systemctl', 'restart', 'ufw.service'])
         return Telegram.send_text(TG_CHAT, f'🔴🔴🔴🔴🔴 Turning on {SSH_PORT}')        
     
 
