@@ -26,7 +26,7 @@ console_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(
 logger.addHandler(file_handler)
 logger.addHandler(console_handler)
 
-def report_ok(ufw: UFW, wg: Wireguard):
+def report(ufw: UFW, wg: Wireguard):
     text = "`"
     text += f"Wireguard: {wg.active}\n"
     text += "\n".join([f"  {peer.allowed_ips}, {peer.latest_handshake}" for peer in wg.peers]) + '\n\n'
@@ -38,9 +38,6 @@ def report_ok(ufw: UFW, wg: Wireguard):
     for symbol in "()#.":
         text = text.replace(symbol, '\\' + symbol)
     return Telegram.send_text(TG_CHAT, text)
-    
-def report_emergency_ssh_on(ufw: UFW, wg: Wireguard):
-    pass
 
 def report_error(e: Exception):
     text = "`"
@@ -51,6 +48,12 @@ def report_error(e: Exception):
     for symbol in "()#.":
         text = text.replace(symbol, '\\' + symbol)
     return Telegram.send_text(TG_CHAT, text)
+
+def emergency_ssh_open(ufw: UFW, wg: Wireguard):
+    ssh_ufw_settings = ufw.profiles.get(f'{SSH_PORT}/tcp', {}) 
+    logger.info(ssh_ufw_settings)
+    if not wg.active and ssh_ufw_settings.get('allow') and ssh_ufw_settings.get('from', '').startswith(WIREGUARD_IP_PREFIX):
+        return Telegram.send_text(TG_CHAT, f'🔴🔴🔴🔴🔴 Turning on {SSH_PORT}')        
     
 
 def main():
@@ -58,25 +61,11 @@ def main():
         logger.info('Start')
         ufw = UFW()
         wg = Wireguard()
-        status, _ = report_ok(ufw, wg)
+        emergency_ssh_open()
+        status, _ = report(ufw, wg)
         logger.info('Success, ' + str(status))
     except Exception as e:
         logger.info('Error: ' +  str(e))
         print(report_error(e))
     
     return
-    
-    
-    if not ufw.active:
-        print('UFW is not active')
-        return
-    
-    wireguard_profile_key = f'{WIREGUARD_PORT}/udp'
-    
-    is_allowed_wireguard_port = ufw.profiles.get(wireguard_profile_key, {}).get('action') == 'allow'
-    
-    if is_allowed_wireguard_port and not wg.active:
-        ssh_key = f'{SSH_PORT}/tcp'
-        ufw.add_profile(ssh_key, 'allow')
-
-

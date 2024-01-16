@@ -4,7 +4,7 @@ from typing import Literal
 class UFW:
     
     active: bool
-    profiles: dict = {}
+    profiles: dict[str: dict] = {}
     
     __command = ["sudo", "ufw", "status"]
     
@@ -50,10 +50,8 @@ class UFW:
             values[to] = {'action': action, 'from': from_}
         return values
     
-    def add_profile(self, to: str, action: Literal['allow', 'deny'], from_: str = ''):
+    def add_profile(self, action: Literal['allow', 'deny'], to: str):
         command = ['sudo', 'ufw', action, to]
-        if from_:
-            command.append(from_)
         try:
             subprocess.check_output(command).decode()
         except subprocess.CalledProcessError as e:
