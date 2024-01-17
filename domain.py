@@ -36,7 +36,7 @@ def get_wg_text(wg: Wireguard):
 
 def get_footer_text(errors: list[Exception]):
     devider = "——————————————————————————————"
-    hashtag = '#Ok' if not errors else f"#Error [{', '.join([error.__name__ for error in errors])}]"
+    hashtag = '#Ok' if not errors else f"#Error [{', '.join([type(error).__name__ for error in errors])}]"
     time = datetime.now().strftime('%H:%M:%S %d.%m.%Y')
     return f"{devider}\n*{hashtag}*, {time}"
 
@@ -67,7 +67,7 @@ def checks():
     try:
         ssh_open_check(ufw, wg)
     except SSHPortClosed as e:
-        logger.error(e.__name__, str(e))
+        logger.error(type(e).__name__, str(e))
         port_to_open = f'{SSH_PORT}/tcp'
         subprocess.run(['sudo', 'ufw', 'allow', 'from', WIREGUARD_SUBNETWORK, 'to', 'any', 'port', str(SSH_PORT), 'proto', 'tcp'])
         subprocess.run(['sudo', 'systemctl', 'restart', 'ufw.service'])
@@ -77,7 +77,7 @@ def checks():
     try:
         no_access_check(ufw, wg)
     except NoAccessSituation as e:
-        logger.error(e.__name__, str(e))
+        logger.error(type(e).__name__, str(e))
         port_to_open = f'{SSH_PORT}/tcp'
         subprocess.run(['sudo', 'ufw', 'allow', port_to_open])
         subprocess.run(['sudo', 'systemctl', 'restart', 'ufw.service'])
