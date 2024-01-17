@@ -6,7 +6,7 @@ from src.adapters.telegram import Telegram
 from .config import TG_CHAT, TG_TOKEN
 
 template = """
-🕰 {time}
+🕰 *{time}*
 
 *UFW:*
 `{ufw_output}`
