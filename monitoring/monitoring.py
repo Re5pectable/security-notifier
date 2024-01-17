@@ -6,7 +6,7 @@ from src.adapters.telegram import Telegram
 from .config import TG_CHAT, TG_TOKEN
 
 template = """
-*{time}*—————————————————————————————————
+*{time___}*——————————————————————————————
 
 *UFW:*
 
@@ -20,6 +20,7 @@ template = """
 
 *Who:*
 `{who_output}`
+—————————————————————————————————————————
 """
 
 def get_ufw():
@@ -33,7 +34,7 @@ def get_who():
 
 def main():
     text = template.format(
-        time=datetime.now().strftime('%H:%M:%S %Y-%m-%d'),
+        time___=datetime.now().strftime('%H:%M:%S %Y-%m-%d'),
         ufw_output=get_ufw(),
         wg_output=get_wg(),
         who_output=get_who()
