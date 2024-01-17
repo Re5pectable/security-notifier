@@ -1,5 +1,6 @@
 import requests
 
+__escape_chars = "\\.()[]*{}_>#-+|!~"
 
 class Telegram:
 
@@ -9,7 +10,7 @@ class Telegram:
         self.__url = f"https://api.telegram.org/bot{token}/"
 
     def send_text(self, chat_id: int, text: str):
-        for symbol in "()#./-_":
+        for symbol in __escape_chars:
             text = text.replace(symbol, '\\' + symbol)
         payload = {
             "chat_id": chat_id,
