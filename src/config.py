@@ -1,5 +1,4 @@
 import configparser
-import os
 from pathlib import Path
 
 DIRECTORY_PATH = Path(__file__).parent.parent
