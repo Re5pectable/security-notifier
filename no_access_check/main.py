@@ -6,7 +6,7 @@ from src.adapters.logger import logger
 from src.adapters.telegram import Telegram
 from src.adapters.ufw import UFW
 from src.adapters.wireguard import Wireguard
-from src.config import *
+from .config import *
 from src.utils.errors import NoAccessSituation, SSHPortClosed
 
 
@@ -51,7 +51,7 @@ def no_access_check(ufw: UFW, wg: Wireguard):
     if all([
         not wg.active,
         ssh_ufw_settings.get('action') == 'allow',
-        ssh_ufw_settings.get('from') == WIREGUARD_SUBNETWORK
+        ssh_ufw_settings.get('from') == WIREGUARD_SUBNET
     ]):
         raise NoAccessSituation()
 
@@ -70,7 +70,7 @@ def checks():
     except SSHPortClosed as e:
         logger.error(type(e).__name__, str(e))
         port_to_open = f'{SSH_PORT}/tcp'
-        subprocess.run(['sudo', 'ufw', 'allow', 'from', WIREGUARD_SUBNETWORK, 'to', 'any', 'port', str(SSH_PORT), 'proto', 'tcp'])
+        subprocess.run(['sudo', 'ufw', 'allow', 'from', WIREGUARD_SUBNET, 'to', 'any', 'port', str(SSH_PORT), 'proto', 'tcp'])
         subprocess.run(['sudo', 'systemctl', 'restart', 'ufw.service'])
         logger.error(f'Opened {port_to_open} to 10.0.0.0/24')
         errors.append(e)

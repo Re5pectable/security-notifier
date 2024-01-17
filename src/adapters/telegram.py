@@ -1,6 +1,6 @@
 import requests
 
-from src.config import TG_BOT_API
+from src.configuration import TG_BOT_API
 
 
 class Telegram:
