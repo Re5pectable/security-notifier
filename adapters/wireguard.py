@@ -2,16 +2,16 @@ import subprocess
 
 
 class Interface:
-    name: str
-    public_key: str
-    listening_port: int
+    name: str = None
+    public_key: str = None
+    listening_port: int = None
 
 
 class Peer:
-    public_key: str
-    endpoint: str
-    allowed_ips: str
-    latest_handshake: str
+    public_key: str = None
+    endpoint: str = None
+    allowed_ips: str = None
+    latest_handshake: str = None
 
 
 class Wireguard:
