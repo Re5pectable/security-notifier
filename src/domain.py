@@ -6,7 +6,7 @@ from adapters.logger import logger
 from adapters.telegram import Telegram
 from adapters.ufw import UFW
 from adapters.wireguard import Wireguard
-from config import *
+from src.config import *
 from errors import NoAccessSituation, SSHPortClosed
 
 

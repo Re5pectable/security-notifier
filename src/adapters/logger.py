@@ -1,5 +1,5 @@
 import logging
-from config import logs_path
+from src.config import logs_path
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO) 
