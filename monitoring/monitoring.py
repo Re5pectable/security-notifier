@@ -8,7 +8,7 @@ from .config import TG_CHAT, TG_TOKEN
 template = """
 🕰 {time}
 
-*UFW:*
+**UFW:**
 `{ufw_output}`
 
 *Wireguard:*
