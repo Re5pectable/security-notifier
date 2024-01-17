@@ -1,6 +1,6 @@
 import requests
 
-_escape_chars = "\\.()[]*{}_>#-+|!~"
+_escape_chars = "\\.()[]{}_>#-+|!~"
 
 class Telegram:
 
