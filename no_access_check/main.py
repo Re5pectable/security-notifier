@@ -93,9 +93,10 @@ def checks():
 
 
 def main():
-    logger.info('--- Start ---')
-    try:
-        checks()
-    except Exception as e:
-        logger.error(traceback.format_exc())
-    logger.info('---- End ----')
+    pass
+    # logger.info('--- Start ---')
+    # try:
+    #     checks()
+    # except Exception as e:
+    #     logger.error(traceback.format_exc())
+    # logger.info('---- End ----')
