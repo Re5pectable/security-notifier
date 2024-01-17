@@ -1,5 +1,4 @@
 import subprocess
-import sys
 import traceback
 from datetime import datetime
 
@@ -8,9 +7,7 @@ from adapters.telegram import Telegram
 from adapters.ufw import UFW
 from adapters.wireguard import Wireguard
 from config import *
-from errors import NoAccessSituation
-
-sys.dont_write_bytecode = True
+from errors import NoAccessSituation, SSHPortClosed
 
 
 def get_ufw_text(ufw: UFW):
@@ -37,19 +34,24 @@ def get_wg_text(wg: Wireguard):
     return '`' + text + '`\n'
 
 
-def get_footer_text(error: Exception | None = None):
+def get_footer_text(errors: list[Exception]):
     devider = "——————————————————————————————"
-    hashtag = '#Ok' if not error else f'#Error {str(error)}'
+    hashtag = '#Ok' if not errors else f"#Error [{', '.join([error.__name__ for error in errors])}]"
     time = datetime.now().strftime('%H:%M:%S %d.%m.%Y')
     return f"{devider}\n*{hashtag}*, {time}"
 
 
+def ssh_open_check(ufw: UFW, wg: Wireguard):
+    ssh_ufw_settings = ufw.profiles.get(f'{SSH_PORT}/tcp')
+    if not ssh_ufw_settings:
+        raise SSHPortClosed()
+
 def no_access_check(ufw: UFW, wg: Wireguard):
-    ssh_ufw_settings = ufw.profiles.get(f'{SSH_PORT}/tcp', {})
+    ssh_ufw_settings = ufw.profiles.get(f'{SSH_PORT}/tcp')
     if all([
         not wg.active,
         ssh_ufw_settings.get('action') == 'allow',
-        ssh_ufw_settings.get('from', '').startswith(WIREGUARD_IP_PREFIX)
+        ssh_ufw_settings.get('from') == WIREGUARD_SUBNETWORK
     ]):
         raise NoAccessSituation()
 
@@ -60,26 +62,32 @@ def checks():
     wg = Wireguard()
     logger.info('Wireguard created...')
     
-    text = f"{get_wg_text(wg)}\n{get_ufw_text(ufw)}"
+    errors = []
+    
+    try:
+        ssh_open_check(ufw, wg)
+    except SSHPortClosed as e:
+        logger.error(e.__name__, str(e))
+        port_to_open = f'{SSH_PORT}/tcp'
+        subprocess.run(['sudo', 'ufw', 'allow', 'from', WIREGUARD_SUBNETWORK, 'to', 'any', 'port', str(SSH_PORT), 'proto', 'tcp'])
+        subprocess.run(['sudo', 'systemctl', 'restart', 'ufw.service'])
+        logger.error(f'Opened {port_to_open} to 10.0.0.0/24')
+        errors.append(e)
 
     try:
         no_access_check(ufw, wg)
-        text += get_footer_text(error=None)
-        
     except NoAccessSituation as e:
-        logger.error('NoAccessSituation:', str(e))
+        logger.error(e.__name__, str(e))
         port_to_open = f'{SSH_PORT}/tcp'
         subprocess.run(['sudo', 'ufw', 'allow', port_to_open])
         subprocess.run(['sudo', 'systemctl', 'restart', 'ufw.service'])
-        logger.error(f'Opened {port_to_open}')
+        logger.error(f'Opened {port_to_open} to everyone')
         text += get_footer_text(error=e)
-        
-    except Exception as e:
-        logger.error('Exception:', str(e))
-        text += get_footer_text(error=e)
-        
-    finally:
-        Telegram.send_text(TG_CHAT, text)
+        errors.append(e)
+    
+    
+    text = f"{get_wg_text(wg)}\n{get_ufw_text(ufw)}{get_footer_text()}"
+    Telegram.send_text(TG_CHAT, text)
 
 
 def main():
