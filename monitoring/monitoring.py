@@ -8,25 +8,25 @@ from .config import TG_CHAT, TG_TOKEN
 template = """
 🕰 {time}
 
-**UFW:**
+*UFW:*
 `{ufw_output}`
-
+------------------------------------------
 *Wireguard:*
 `{wg_output}`
-
+------------------------------------------
 *Who:*
 `{who_output}`
 
 """
 
 def get_ufw():
-    return subprocess.check_output(['sudo', 'ufw', 'status', 'verbose']).decode()
+    return subprocess.check_output(['sudo', 'ufw', 'status', 'verbose']).decode().strip()
 
 def get_wg():
-    return subprocess.check_output(['sudo', 'wg']).decode()
+    return subprocess.check_output(['sudo', 'wg']).decode().strip()
 
 def get_who():
-    return subprocess.check_output(['sudo', 'who']).decode()
+    return subprocess.check_output(['sudo', 'who']).decode().strip()
 
 def main():
     text = template.format(
