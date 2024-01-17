@@ -87,7 +87,7 @@ def checks():
         errors.append(e)
         ufw = UFW()
     
-    text += {get_footer_text(errors)}
+    text += get_footer_text(errors)
     
     Telegram.send_text(TG_CHAT, text)
 
