@@ -73,6 +73,7 @@ def checks():
         subprocess.run(['sudo', 'systemctl', 'restart', 'ufw.service'])
         logger.error(f'Opened {port_to_open} to 10.0.0.0/24')
         errors.append(e)
+        ufw = UFW()
 
     try:
         no_access_check(ufw, wg)
@@ -84,6 +85,7 @@ def checks():
         logger.error(f'Opened {port_to_open} to everyone')
         text += get_footer_text(error=e)
         errors.append(e)
+        ufw = UFW()
     
     
     text = f"{get_wg_text(wg)}\n{get_ufw_text(ufw)}{get_footer_text(errors)}"
