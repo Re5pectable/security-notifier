@@ -12,13 +12,9 @@ User *{username}* logged in to *{server_name}*
 """
 
 def notify():
-    user_ = os.getenv('USER')
-    time_ = datetime.now().strftime('%H:%M:%S %Y-%m-%d')
-    server_name_ = SERVER_NAME
-    
     text = message_template.format(
-        username=user_,
-        server_name=server_name_,
-        time=time_
+        username=os.getenv('USER'),
+        server_name=datetime.now().strftime('%H:%M:%S %Y-%m-%d'),
+        time=SERVER_NAME
     )
     Telegram(TG_TOKEN).send_text(TG_CHAT, text)
