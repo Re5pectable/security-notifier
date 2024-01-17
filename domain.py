@@ -26,7 +26,7 @@ def get_ufw_text(ufw: UFW):
 
 
 def get_wg_text(wg: Wireguard):
-    header = f"Wireguard: {wg.active}\n"
+    header = f"Wireguard active: {wg.active}\n"
     peer_template = "  {allowed_ips}, {latest_handshake}"
 
     text = header
