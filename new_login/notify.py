@@ -7,7 +7,7 @@ from .config import SERVER_NAME, TG_CHAT, TG_TOKEN
 
 message_template = """
 User *{username}* logged in to *{server_name}*
-`{time}`
+{time}
 """
 
 def notify():
