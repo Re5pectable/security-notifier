@@ -6,8 +6,9 @@ from src.adapters.logger import logger
 from src.adapters.telegram import Telegram
 from src.adapters.ufw import UFW
 from src.adapters.wireguard import Wireguard
-from .config import *
 from src.utils.errors import NoAccessSituation, SSHPortClosed
+
+from .config import *
 
 
 def get_ufw_text(ufw: UFW):

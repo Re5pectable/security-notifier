@@ -1,5 +1,6 @@
 from src.configuration import config_parser
 
-telegram_token = config_parser.get('Telegram', 'BOT_TOKEN')
-telegram_chat_id = config_parser.get('Telegram', 'CHAT_ID')
-server_name = config_parser.get('Server', 'NAME')
+SSH_PORT: int = config_parser.getint('Server', 'SSH_PORT')
+SERVER_NAME: str = config_parser.get('Server', 'NAME')
+TG_TOKEN: str = config_parser.get('Telegram', 'TOKEN')
+TG_CHAT: int = config_parser.getint('Telegram', 'CHAT_ID')
