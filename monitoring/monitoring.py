@@ -20,13 +20,13 @@ template = """
 """
 
 def get_ufw():
-    return subprocess.check_output(['sudo', 'ufw', 'status', 'verbose'])
+    return subprocess.check_output(['sudo', 'ufw', 'status', 'verbose']).decode()
 
 def get_wg():
-    return subprocess.check_output(['sudo', 'wg'])
+    return subprocess.check_output(['sudo', 'wg']).decode()
 
 def get_who():
-    return subprocess.check_output(['sudo', 'who'])
+    return subprocess.check_output(['sudo', 'who']).decode()
 
 def main():
     text = template.format(
