@@ -63,6 +63,7 @@ def checks():
     logger.info('Wireguard created...')
     
     errors = []
+    text = f"{get_wg_text(wg)}\n{get_ufw_text(ufw)}"
     
     try:
         ssh_open_check(ufw, wg)
@@ -83,12 +84,11 @@ def checks():
         subprocess.run(['sudo', 'ufw', 'allow', port_to_open])
         subprocess.run(['sudo', 'systemctl', 'restart', 'ufw.service'])
         logger.error(f'Opened {port_to_open} to everyone')
-        text += get_footer_text(error=e)
         errors.append(e)
         ufw = UFW()
     
+    text += {get_footer_text(errors)}
     
-    text = f"{get_wg_text(wg)}\n{get_ufw_text(ufw)}{get_footer_text(errors)}"
     Telegram.send_text(TG_CHAT, text)
 
 
