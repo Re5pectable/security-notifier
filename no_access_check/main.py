@@ -2,12 +2,12 @@ import subprocess
 import traceback
 from datetime import datetime
 
-from adapters.logger import logger
-from adapters.telegram import Telegram
-from adapters.ufw import UFW
-from adapters.wireguard import Wireguard
+from src.adapters.logger import logger
+from src.adapters.telegram import Telegram
+from src.adapters.ufw import UFW
+from src.adapters.wireguard import Wireguard
 from src.config import *
-from errors import NoAccessSituation, SSHPortClosed
+from src.utils.errors import NoAccessSituation, SSHPortClosed
 
 
 def get_ufw_text(ufw: UFW):
